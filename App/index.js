@@ -5,24 +5,39 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import axios from 'axios';
 
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxYcfUPH0QArff5dAWm0b6Hl-88a9sI4xf1TkG7VZTayrGUTvzPtJB0huoaIAdLz/pub?output=csv';
+const GOOGLE_SHEET_ID = '1MV6_Umdyryf5FLxReik_mJFH-5fIJWUJxkvbP_GrSco';
+const GOOGLE_SHEET_API_KEY = 'YOUR_GOOGLE_SHEET_API_KEY'; // Replace with your actual API key
+const SHEET_NAME = 'Sheet1'; // Change according to your sheet name
+
+const getGoogleSheetUrl = (sheetId, apiKey, sheetName) => {
+  return `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${sheetName}?key=${apiKey}`;
+};
 
 export default function App() {
   const [todos, setTodos] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(GOOGLE_SHEET_URL)
-      .then((response) => {
-        const rows = response.data.split('\n').slice(1); // Skip header row
-        const todoData = rows.map((row) => {
-          const [id, task, status] = row.split(',');
-          return { id, task, status };
+    const fetchData = async () => {
+      try {
+        const url = getGoogleSheetUrl(GOOGLE_SHEET_ID, GOOGLE_SHEET_API_KEY, SHEET_NAME);
+        const response = await axios.get(url);
+
+        const rows = response.data.values.slice(1); // Skip the header row
+        const todoData = rows.map((row, index) => {
+          const [task, status] = row;
+          return { id: index.toString(), task, status };
         });
+
         setTodos(todoData);
         setLoading(false);
-      })
-      .catch((error) => console.error('Error fetching data:', error));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   return (
