@@ -1,29 +1,44 @@
 // Filename: index.js
 // Combined code from all files
 
-import React from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
+import axios from 'axios';
 
-// Static data extracted from Google Sheets
-const TODOS = [
-  { id: '1', task: 'Buy groceries', status: 'Pending' },
-  { id: '2', task: 'Walk the dog', status: 'Completed' },
-  { id: '3', task: 'Finish homework', status: 'Pending' },
-  { id: '4', task: 'Call Mom', status: 'Pending' },
-  { id: '5', task: 'Clean the house', status: 'Completed' }
-];
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTxYcfUPH0QArff5dAWm0b6Hl-88a9sI4xf1TkG7VZTayrGUTvzPtJB0huoaIAdLz/pub?output=csv';
 
 export default function App() {
+  const [todos, setTodos] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(GOOGLE_SHEET_URL)
+      .then((response) => {
+        const rows = response.data.split('\n').slice(1); // Skip header row
+        const todoData = rows.map((row) => {
+          const [id, task, status] = row.split(',');
+          return { id, task, status };
+        });
+        setTodos(todoData);
+        setLoading(false);
+      })
+      .catch((error) => console.error('Error fetching data:', error));
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        {TODOS.map(todo => (
-          <View key={todo.id} style={styles.todoItem}>
-            <Text style={styles.todoText}>{todo.task}</Text>
-            <Text style={styles.todoStatus}>{todo.status}</Text>
-          </View>
-        ))}
-      </ScrollView>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          {todos.map(todo => (
+            <View key={todo.id} style={styles.todoItem}>
+              <Text style={styles.todoText}>{todo.task}</Text>
+              <Text style={styles.todoStatus}>{todo.status}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
