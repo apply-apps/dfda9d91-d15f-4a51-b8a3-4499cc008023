@@ -2,10 +2,11 @@
 // Combined code from all files
 
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { SafeAreaView, ScrollView, StyleSheet, Text, View, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 
-const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQmGEnVX1VcmSEsEMdFfek1UVGcFMBCbHBJO5J2aWxD1fhEfND7ML-ejW3Liv7f6C3oHfdVr19eikQk/pub?output=csv';
+// Link to the published CSV Google Sheet
+const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTowGjknsfdNphbqoxgA-K6BpV6Gkffcb67qK8L_j_Hjj8_UBJvpmfOYq3ZY2qsF/pub?output=csv';
 
 export default function App() {
   const [todos, setTodos] = useState([]);
@@ -28,14 +29,6 @@ export default function App() {
       });
   }, []);
 
-  const toggleTodoStatus = (id) => {
-    setTodos(prevTodos =>
-      prevTodos.map(todo =>
-        todo.id === id ? { ...todo, status: todo.status === 'completed' ? 'pending' : 'completed' } : todo
-      )
-    );
-  };
-
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
@@ -48,12 +41,10 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         {todos.map(todo => (
-          <TouchableOpacity key={todo.id} style={styles.todoItem} onPress={() => toggleTodoStatus(todo.id)}>
+          <View key={todo.id} style={styles.todoItem}>
             <Text style={styles.todoText}>{todo.task}</Text>
-            <Text style={[styles.todoStatus, { color: todo.status === 'completed' ? 'green' : 'red' }]}>
-              {todo.status}
-            </Text>
-          </TouchableOpacity>
+            <Text style={styles.todoStatus}>{todo.status}</Text>
+          </View>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -88,5 +79,6 @@ const styles = StyleSheet.create({
   },
   todoStatus: {
     fontSize: 14,
+    color: '#888',
   },
 });
